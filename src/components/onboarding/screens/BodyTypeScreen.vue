@@ -56,6 +56,12 @@
   </div>
 </template>
 
+<script lang="ts">
+export default {
+  name: 'BodyTypeScreen'
+}
+</script>
+
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 

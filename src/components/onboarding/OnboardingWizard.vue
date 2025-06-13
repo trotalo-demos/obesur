@@ -32,8 +32,17 @@
               />
             </v-window-item>
 
-            <!-- Weight Screen -->
+            <!-- Photo Capture Screen -->
             <v-window-item :value="4">
+              <photo-capture-screen
+                @continue="nextStep"
+                @update-full-body-photo="userData.fullBodyPhoto = $event"
+                @update-selfie-photo="userData.selfiePhoto = $event"
+              />
+            </v-window-item>
+
+            <!-- Weight Screen -->
+            <v-window-item :value="5">
               <weight-screen 
                 @continue="nextStep"
                 @update:weight="userData.weight = $event"
@@ -41,15 +50,15 @@
             </v-window-item>
 
             <!-- Activity Level Screen -->
-            <v-window-item :value="5">
-              <activity-level-screen 
+            <v-window-item :value="6">
+              <activity-level-screen
                 @continue="nextStep"
                 @update:activityLevel="userData.activityLevel = $event"
               />
             </v-window-item>
 
             <!-- Body Type Screen -->
-            <v-window-item :value="6">
+            <v-window-item :value="7">
               <body-type-screen 
                 @continue="nextStep"
                 @update:bodyType="userData.bodyType = $event"
@@ -57,9 +66,9 @@
             </v-window-item>
 
             <!-- Fitness Experience Screen -->
-            <v-window-item :value="7">
+            <v-window-item :value="8">
               <fitness-experience-screen 
-                @continue="completeOnboarding"
+                @continue="finishOnboarding"
                 @update:fitnessExperience="userData.fitnessExperience = $event"
               />
             </v-window-item>
@@ -81,10 +90,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { initializeApp } from 'firebase/app'
-import { getDatabase, ref as dbRef, set } from 'firebase/database'
+import { useFirebaseStore } from '../../stores/firebase'
 
 defineOptions({
   name: 'OnboardingWizard'
@@ -93,6 +101,7 @@ defineOptions({
 // Import screen components
 import WelcomeScreen from './screens/WelcomeScreen.vue'
 import NameSexScreen from './screens/NameSexScreen.vue'
+import PhotoCaptureScreen from './screens/PhotoCaptureScreen.vue'
 import ReasonScreen from './screens/ReasonScreen.vue'
 import WeightScreen from './screens/WeightScreen.vue'
 import ActivityLevelScreen from './screens/ActivityLevelScreen.vue'
@@ -103,45 +112,31 @@ import FitnessExperienceScreen from './screens/FitnessExperienceScreen.vue'
 import DefaultAvatar from './avatars/DefaultAvatar.vue'
 import ActivityAvatar from './avatars/ActivityAvatar.vue'
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBrHjFMunMYu6o2Fd8pE0b7Lz6myGMSR4U",
-  authDomain: "trotalodev-c281e.firebaseapp.com",
-  databaseURL: "https://obesur.firebaseio.com/",
-  projectId: "trotalodev-c281e",
-  storageBucket: "trotalodev-c281e.firebasestorage.app",
-  messagingSenderId: "882002321764",
-  appId: "1:882002321764:web:c8665e14f4ed33bcdada71"
-}
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
-const database = getDatabase(app)
-
-
-
+const firebaseStore = useFirebaseStore()
 const router = useRouter()
 const step = ref(1)
-const totalSteps = 7
+const totalSteps = 8
 
-// User data store
+// Initialize user data object
 const userData = ref({
   name: '',
   sex: '',
   reason: '',
+  selfiePhoto: '',
+  fullBodyPhoto: '',
   weight: 0,
-  bodyType: '',
   activityLevel: '',
+  bodyType: '',
   fitnessExperience: '',
   sessionId: '',
   createdAt: ''
 })
 
 // Generate a session ID when the component is mounted
-onMounted(() => {
-  userData.value.sessionId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-  userData.value.createdAt = new Date().toISOString()
-})
+// onMounted(() => {
+//   userData.value.sessionId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+//   userData.value.createdAt = new Date().toISOString()
+// })
 
 // Calculate progress percentage
 const progressPercentage = computed(() => {
@@ -163,29 +158,23 @@ const currentAvatarComponent = computed(() => {
 const nextStep = () => {
   if (step.value < totalSteps) {
     step.value++
-    saveDataToFirebase()
   }
 }
 
-// Save current data to Firebase
-const saveDataToFirebase = () => {
-  const userRef = dbRef(database, `users/${userData.value.sessionId}`)
-  set(userRef, userData.value)
-    .catch((error) => {
-      console.error('Error saving user data: ', error)
-    })
-}
+// Save data to Firebase and redirect to summary
+const finishOnboarding = () => {
+  // Generate a unique session ID or use existing one
+  let sessionId = firebaseStore.getSessionId
+  if (!sessionId) {
+    sessionId = Date.now().toString()
+    firebaseStore.setSessionId(sessionId)
+  }
 
-// Complete onboarding process
-const completeOnboarding = () => {
-  // Guardar el ID de sesión en localStorage para recuperarlo en la página de inicio
-  localStorage.setItem('obesurSessionId', userData.value.sessionId)
-  
-  // Guardar los datos en Firebase
-  saveDataToFirebase()
-  
-  // Redireccionar a la página de resumen
-  router.push('/resumen')
+  // Save user data to Firebase using the store
+  firebaseStore.saveUserData(userData.value).then(() => {
+    // Navigate to summary screen
+    router.push('/resumen')
+  })
 }
 </script>
 

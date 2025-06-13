@@ -17,6 +17,7 @@ declare module 'vue' {
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     NameSexScreen: typeof import('./components/onboarding/screens/NameSexScreen.vue')['default']
     OnboardingWizard: typeof import('./components/onboarding/OnboardingWizard.vue')['default']
+    PhotoCaptureScreen: typeof import('./components/onboarding/screens/PhotoCaptureScreen.vue')['default']
     ReasonScreen: typeof import('./components/onboarding/screens/ReasonScreen.vue')['default']
     Resumen: typeof import('./components/home/Resumen.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

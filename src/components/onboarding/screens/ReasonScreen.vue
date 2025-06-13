@@ -65,8 +65,16 @@
   </div>
 </template>
 
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'ReasonScreen'
+})
+</script>
+
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 defineOptions({
   name: 'ReasonScreen'

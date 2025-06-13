@@ -14,9 +14,12 @@
             <!-- Tarjeta de progreso -->
             <v-card class="mb-4" rounded="lg">
               <v-card-text class="d-flex">
-                <v-avatar class="mr-4" size="80">
+                <div v-if="userData && userData.selfiePhoto" class="user-avatar-circle mr-4">
+                  <img alt="Tu selfie" class="user-selfie" :src="userData.selfiePhoto">
+                </div>
+                <!-- <v-avatar v-else class="mr-4" size="80">
                   <v-img src="/avatars/default-avatar.svg" alt="Avatar"></v-img>
-                </v-avatar>
+                </v-avatar> -->
                 <div>
                   <h2 class="text-h5 font-weight-bold">¡Bien hecho!</h2>
                   <p class="text-subtitle-1">Has completado {{ completedTasksCount }} de {{ totalTasks }} tareas</p>
@@ -87,35 +90,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useFirebaseStore } from '../stores/firebase'
 
 defineOptions({
   name: 'HomePage'
 })
 
-// Tab activa
+// Store de Firebase centralizado
+const firebaseStore = useFirebaseStore()
+
+// Usuario y datos
+const userData = ref(null)
+
+// Datos de debuggeo
+const debugInfo = ref('')
+
+// Estado de la aplicación
 const activeTab = ref('hoy')
 
-// Lista de tareas de hoy
+// Tareas del día
 const todayTasks = ref([
-  {
-    title: 'Tomar foto del almuerzo',
-    subtitle: '',
-    icon: 'mdi-food',
-    completed: false
-  },
-  {
-    title: 'Caminar 6.000 pasos',
-    subtitle: '',
-    icon: 'mdi-shoe-print',
-    completed: false
-  },
-  {
-    title: 'Hacer ejercicios',
-    subtitle: '',
-    icon: 'mdi-dumbbell',
-    completed: false
-  }
+  { id: 1, title: 'Actividad física diaria', description: '30 minutos', completed: false },
+  { id: 2, title: 'Registro de alimentos', description: 'Desayuno, comida, cena', completed: true },
+  { id: 3, title: 'Control de agua', description: '2 litros', completed: false },
+  { id: 4, title: 'Lectura educativa', description: 'Artículo nutrición', completed: false }
 ])
 
 // Lista de tareas completadas
@@ -137,6 +136,35 @@ const completedTasks = ref([
 // Contar tareas completadas y totales
 const totalTasks = computed(() => todayTasks.value.length)
 const completedTasksCount = computed(() => todayTasks.value.filter(task => task.completed).length)
+
+onMounted(async () => {
+  console.log('Home - Iniciando carga de datos desde el store centralizado')
+  
+  try {
+    // Cargar datos del usuario usando el store centralizado
+    await firebaseStore.loadUserData()
+    
+    if (firebaseStore.userData) {
+      userData.value = firebaseStore.userData
+      console.log('Home - Datos cargados correctamente desde el store centralizado:', userData.value)
+    } else {
+      console.log('Home - No se encontraron datos de usuario en el store centralizado')
+      
+      // Fallback a localStorage (solo para compatibilidad durante la migración)
+      const localUserData = localStorage.getItem('userData')
+      if (localUserData) {
+        try {
+          userData.value = JSON.parse(localUserData)
+          console.log('Home - Datos recuperados del fallback (localStorage):', userData.value)
+        } catch (error) {
+          console.error('Home - Error al procesar datos del fallback:', error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Home - Error al cargar datos desde el store:', error)
+  }
+})
 </script>
 
 <style scoped>
@@ -153,5 +181,19 @@ const completedTasksCount = computed(() => todayTasks.value.filter(task => task.
 
 .v-avatar {
   border: 1px solid rgba(0,0,0,0.1);
+}
+
+.user-avatar-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #4caf50;
+}
+
+.user-selfie {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>

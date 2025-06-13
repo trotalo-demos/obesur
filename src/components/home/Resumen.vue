@@ -8,9 +8,12 @@
             <p class="text-subtitle-1">{{ greeting }}</p>
           </div>
 
-          <!-- Avatar display area -->
-          <div class="avatar-container text-center my-6">
-            <user-avatar :user-data="userData" />
+          <!-- Avatar display area con selfie si existe -->
+          <div v-if="userData.selfiePhoto" class="avatar-container text-center my-6">
+            <div class="user-avatar-circle">
+              <img alt="Tu selfie" class="user-selfie" :src="userData.selfiePhoto">
+            </div>
+            <p class="text-caption mt-2">Tu foto</p>
           </div>
 
           <!-- User Summary -->
@@ -89,8 +92,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { getDatabase, ref as dbRef, onValue } from 'firebase/database'
 import { useRouter } from 'vue-router'
+import { useFirebaseStore } from '../../stores/firebase'
 import UserAvatar from './UserAvatar.vue'
 
 defineOptions({
@@ -145,21 +148,16 @@ const startProgram = () => {
   router.push('/home')
 }
 
+// Store de Firebase centralizado
+const firebaseStore = useFirebaseStore()
+
 onMounted(async () => {
-  // Get session ID from localStorage (saved during onboarding)
-  const sessionId = localStorage.getItem('obesurSessionId')
+  // Cargar datos del usuario usando el store
+  await firebaseStore.loadUserData()
   
-  if (sessionId) {
-    // Connect to Firebase and get user data
-    const database = getDatabase()
-    const userDataRef = dbRef(database, `users/${sessionId}`)
-    
-    onValue(userDataRef, (snapshot) => {
-      const data = snapshot.val()
-      if (data) {
-        userData.value = data
-      }
-    })
+  // Actualizar los datos locales cuando se carguen del store
+  if (firebaseStore.userData) {
+    userData.value = firebaseStore.userData
   }
 })
 </script>
@@ -176,5 +174,20 @@ onMounted(async () => {
 
 .user-summary {
   background-color: rgba(var(--v-theme-surface-variant), 0.4);
+}
+
+.user-avatar-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 3px solid #4caf50;
+}
+
+.user-selfie {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>

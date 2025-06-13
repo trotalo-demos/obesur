@@ -30,11 +30,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineOptions({
+<script lang="ts">
+export default {
   name: 'WelcomeScreen'
-})
+}
+</script>
 
+<script setup lang="ts">
 const emit = defineEmits(['continue'])
 
 const emitContinue = () => {
