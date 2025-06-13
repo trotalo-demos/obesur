@@ -362,15 +362,9 @@ const saveAndClose = async () => {
     mealType: 'unclassified' // Por defecto, se puede mejorar más adelante para que el usuario seleccione
   }
 
-  // Guardar en Firebase
-  try {
-    await firebaseStore.saveFoodRegistry(foodData)
-    emit('save', foodData)
-    closeDialog()
-  } catch (error) {
-    console.error('Error al guardar registro de alimentos:', error)
-    alert('Error al guardar. Por favor intenta nuevamente.')
-  }
+  // Emitimos el evento para que el componente padre maneje el guardado en Firebase
+  emit('save', foodData)
+  closeDialog()
 }
 
 // Función para restablecer el formulario

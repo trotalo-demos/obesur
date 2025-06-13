@@ -213,9 +213,6 @@ const openFoodRegisterModal = () => {
 
 // Manejar el registro de alimentos
 const handleFoodRegistration = (foodData) => {
-  // Guardar en el registro
-  foodRegistry.value.push(foodData)
-  
   // Guardar en Firebase
   firebaseStore.saveFoodRegistry(foodData)
     .then(() => {

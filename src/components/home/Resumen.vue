@@ -63,7 +63,7 @@
           </v-card>
 
           <!-- Next Steps -->
-          <v-card class="mb-4">
+          <!-- <v-card class="mb-4">
             <v-card-title class="text-h6">Próximos pasos</v-card-title>
             <v-list density="compact" lines="two">
               <v-list-item prepend-icon="mdi-calendar">
@@ -79,7 +79,7 @@
                 <v-list-item-subtitle>Accede a tu programa recomendado</v-list-item-subtitle>
               </v-list-item>
             </v-list>
-          </v-card>
+          </v-card> -->
 
           <v-btn block color="success" size="large" class="mt-4" @click="startProgram">
             Comenzar mi programa
@@ -154,7 +154,7 @@ const firebaseStore = useFirebaseStore()
 onMounted(async () => {
   // Cargar datos del usuario usando el store
   await firebaseStore.loadUserData()
-  
+
   // Actualizar los datos locales cuando se carguen del store
   if (firebaseStore.userData) {
     userData.value = firebaseStore.userData
