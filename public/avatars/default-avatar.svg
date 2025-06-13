@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cabeza mejorada -->
+  <circle cx="60" cy="40" r="30" fill="#FFD8B5" />
+  
+  <!-- Pelo -->
+  <path d="M 30 40 C 30 25 45 15 60 15 C 75 15 90 25 90 40 L 90 55 C 90 55 75 60 60 60 C 45 60 30 55 30 55 Z" fill="#794422" />
+  
+  <!-- Cara -->
+  <circle cx="48" cy="38" r="3" fill="#333333" /> <!-- Ojo izquierdo -->
+  <circle cx="72" cy="38" r="3" fill="#333333" /> <!-- Ojo derecho -->
+  <path d="M 48 48 Q 60 55 72 48" fill="transparent" stroke="#333333" stroke-width="2" /> <!-- Sonrisa -->
+  
+  <!-- Cuerpo mejorado - camisa y pantalón -->
+  <path d="M 40 70 L 40 110 L 80 110 L 80 70 Z" fill="#3498db" /> <!-- Camisa azul -->
+  <path d="M 40 70 C 40 60 80 60 80 70" fill="#3498db" /> <!-- Parte superior redondeada -->
+  
+  <!-- Cuello -->
+  <path d="M 55 60 L 55 75 L 65 75 L 65 60" fill="#FFD8B5" />
+</svg>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cabeza -->
+  <circle cx="60" cy="35" r="25" fill="#FFD8B5" />
+  
+  <!-- Pelo corto deportivo -->
+  <path d="M 35 30 C 35 20 45 10 60 10 C 75 10 85 20 85 30 C 85 35 80 40 80 40 L 40 40 C 40 40 35 35 35 30 Z" fill="#663300" />
+  
+  <!-- Cara -->
+  <circle cx="50" cy="32" r="3" fill="#333333" /> <!-- Ojo izquierdo -->
+  <circle cx="70" cy="32" r="3" fill="#333333" /> <!-- Ojo derecho -->
+  <path d="M 50 42 Q 60 50 70 42" fill="transparent" stroke="#333333" stroke-width="2" /> <!-- Sonrisa amplia -->
+  
+  <!-- Cuerpo deportivo/en movimiento -->
+  <path d="M 50 60 L 45 65 L 40 90 L 45 110 L 75 110 L 80 90 L 75 65 L 70 60" fill="#2ecc71" /> <!-- Camiseta deportiva verde -->
+  <path d="M 50 60 C 50 55 70 55 70 60" fill="#2ecc71" /> <!-- Parte superior redondeada -->
+  
+  <!-- Brazos activos -->
+  <path d="M 45 65 C 30 60 25 75 30 85" fill="#FFD8B5" stroke="#333333" stroke-width="1" /> <!-- Brazo izquierdo -->
+  <path d="M 75 65 C 90 60 95 75 90 85" fill="#FFD8B5" stroke="#333333" stroke-width="1" /> <!-- Brazo derecho -->
+  
+  <!-- Cuello -->
+  <path d="M 55 55 L 55 65 L 65 65 L 65 55" fill="#FFD8B5" />
+  
+  <!-- Símbolo de movimiento -->
+  <path d="M 20 100 C 25 90 30 95 35 85" fill="none" stroke="#333333" stroke-width="1" stroke-dasharray="3,2" />
+  <path d="M 85 85 C 90 95 95 90 100 100" fill="none" stroke="#333333" stroke-width="1" stroke-dasharray="3,2" />
+</svg>

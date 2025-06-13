@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cabeza -->
+  <circle cx="60" cy="40" r="28" fill="#FFD8B5" />
+  
+  <!-- Pelo largo femenino -->
+  <path d="M 32 40 C 32 25 45 15 60 15 C 75 15 88 25 88 40 C 88 45 85 55 85 55 C 85 55 90 65 85 75 C 80 85 75 70 70 80 
+           C 65 90 55 90 50 80 C 45 70 40 85 35 75 C 30 65 35 55 35 55 C 35 55 32 45 32 40 Z" fill="#8B4513" />
+  
+  <!-- Cara -->
+  <circle cx="48" cy="38" r="3" fill="#333333" /> <!-- Ojo izquierdo -->
+  <circle cx="72" cy="38" r="3" fill="#333333" /> <!-- Ojo derecho -->
+  <path d="M 48 48 Q 60 55 72 48" fill="transparent" stroke="#333333" stroke-width="2" /> <!-- Sonrisa -->
+  
+  <!-- Cuerpo - vestido -->
+  <path d="M 40 70 L 35 110 L 85 110 L 80 70 Z" fill="#E84393" /> <!-- Vestido rosa -->
+  <path d="M 40 70 C 40 60 80 60 80 70" fill="#E84393" /> <!-- Parte superior redondeada -->
+  
+  <!-- Cuello -->
+  <path d="M 55 60 L 55 75 L 65 75 L 65 60" fill="#FFD8B5" />
+</svg>
