@@ -14,6 +14,7 @@ declare module 'vue' {
     BodyTypeScreen: typeof import('./components/onboarding/screens/BodyTypeScreen.vue')['default']
     DefaultAvatar: typeof import('./components/onboarding/avatars/DefaultAvatar.vue')['default']
     FitnessExperienceScreen: typeof import('./components/onboarding/screens/FitnessExperienceScreen.vue')['default']
+    FoodRegisterModal: typeof import('./components/home/FoodRegisterModal.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     NameSexScreen: typeof import('./components/onboarding/screens/NameSexScreen.vue')['default']
     OnboardingWizard: typeof import('./components/onboarding/OnboardingWizard.vue')['default']

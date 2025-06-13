@@ -28,7 +28,7 @@
             </v-card>
 
             <!-- Lista de tareas -->
-            <v-card v-for="(task, index) in todayTasks" :key="index" class="mb-4" rounded="lg" variant="outlined">
+            <v-card v-for="(task, index) in todayTasks" :key="index" class="mb-4" rounded="lg" variant="outlined" @click="handleTaskClick(task)">
               <v-card-text class="d-flex align-center justify-space-between py-4">
                 <div class="d-flex align-center">
                   <v-avatar class="mr-4" size="60" color="grey-lighten-3">
@@ -36,10 +36,10 @@
                   </v-avatar>
                   <div>
                     <h3 class="text-h6">{{ task.title }}</h3>
-                    <p v-if="task.subtitle" class="text-subtitle-2">{{ task.subtitle }}</p>
+                    <p v-if="task.description" class="text-subtitle-2">{{ task.description }}</p>
                   </div>
                 </div>
-                <v-checkbox v-model="task.completed" color="success" hide-details></v-checkbox>
+                <v-checkbox v-model="task.completed" color="success" hide-details @click.stop></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -50,6 +50,8 @@
       <v-window-item value="completadas">
         <v-row>
           <v-col cols="12">
+            <!-- Tareas completadas -->
+            <h2 class="text-h6 mb-3">Tareas Completadas</h2>
             <v-card v-for="(task, index) in completedTasks" :key="index" class="mb-4" rounded="lg" variant="outlined">
               <v-card-text class="d-flex align-center justify-space-between py-4">
                 <div class="d-flex align-center">
@@ -64,12 +66,64 @@
                 </div>
               </v-card-text>
             </v-card>
+            
+            <!-- Registros de alimentos -->
+            <div v-if="foodRegistry && foodRegistry.length > 0">
+              <h2 class="text-h6 mt-6 mb-3">Historial de Alimentos</h2>
+              <v-card v-for="(food, index) in foodRegistry" :key="'food-'+index" class="mb-4" rounded="lg">
+                <v-card-text class="py-4">
+                  <div class="d-flex">
+                    <!-- Imagen del alimento -->
+                    <div class="food-image-container mr-4">
+                      <img :src="food.imageUrl" alt="Imagen de comida" class="food-image">
+                    </div>
+                    
+                    <!-- Detalles del alimento -->
+                    <div>
+                      <h3 class="text-h6">{{ formatDate(food.timestamp) }}</h3>
+                      <v-chip-group class="mb-2">
+                        <v-chip v-for="(item, i) in food.results.items.slice(0, 3)" :key="i" size="small" color="primary" class="mr-1">
+                          {{ item.name }}
+                        </v-chip>
+                        <v-chip v-if="food.results.items.length > 3" size="small">+{{ food.results.items.length - 3 }} más</v-chip>
+                      </v-chip-group>
+                      
+                      <!-- Información nutricional resumida -->
+                      <div class="d-flex flex-wrap nutrition-summary">
+                        <div class="nutrition-item">
+                          <span class="font-weight-bold">{{ food.results.nutrition.calories }}</span> kcal
+                        </div>
+                        <div class="nutrition-item">
+                          <span class="font-weight-bold">{{ food.results.nutrition.protein }}</span> g prot
+                        </div>
+                        <div class="nutrition-item">
+                          <span class="font-weight-bold">{{ food.results.nutrition.carbs }}</span> g carbs
+                        </div>
+                        <div class="nutrition-item">
+                          <span class="font-weight-bold">{{ food.results.nutrition.fats }}</span> g grasas
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </div>
+            
+            <!-- Mensaje si no hay registros -->
+            <div v-else class="text-center py-8">
+              <v-icon icon="mdi-food-off" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
+              <p class="text-body-1">Aún no has registrado ningún alimento</p>
+              <v-btn color="primary" class="mt-4" @click="openFoodRegisterModal">Registrar alimento</v-btn>
+            </div>
           </v-col>
         </v-row>
       </v-window-item>
     </v-window>
   </v-container>
 
+  <!-- Modal para registro de alimentos -->
+  <FoodRegisterModal ref="foodRegisterModal" @save="handleFoodRegistration" />
+  
   <!-- Footer con navegación -->
   <v-bottom-navigation bg-color="surface">
     <v-btn value="cirugia">
@@ -92,6 +146,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useFirebaseStore } from '../stores/firebase'
+import FoodRegisterModal from '../components/home/FoodRegisterModal.vue'
 
 defineOptions({
   name: 'HomePage'
@@ -111,10 +166,10 @@ const activeTab = ref('hoy')
 
 // Tareas del día
 const todayTasks = ref([
-  { id: 1, title: 'Actividad física diaria', description: '30 minutos', completed: false },
-  { id: 2, title: 'Registro de alimentos', description: 'Desayuno, comida, cena', completed: true },
-  { id: 3, title: 'Control de agua', description: '2 litros', completed: false },
-  { id: 4, title: 'Lectura educativa', description: 'Artículo nutrición', completed: false }
+  { id: 1, title: 'Actividad física diaria', description: '30 minutos', icon: 'mdi-run', completed: false },
+  { id: 2, title: 'Registro de alimentos', description: 'Desayuno, comida, cena', icon: 'mdi-food-apple', completed: false },
+  { id: 3, title: 'Control de agua', description: '2 litros', icon: 'mdi-water', completed: false },
+  { id: 4, title: 'Lectura educativa', description: 'Artículo nutrición', icon: 'mdi-book-open-page-variant', completed: false }
 ])
 
 // Lista de tareas completadas
@@ -137,12 +192,79 @@ const completedTasks = ref([
 const totalTasks = computed(() => todayTasks.value.length)
 const completedTasksCount = computed(() => todayTasks.value.filter(task => task.completed).length)
 
+// Referencias a componentes
+const foodRegisterModal = ref(null)
+
+// Alimentos registrados
+const foodRegistry = ref([])
+
+// Manejar clic en una tarea
+const handleTaskClick = (task) => {
+  // Si es la tarea de registro de alimentos, abrir el modal
+  if (task.id === 2) {
+    openFoodRegisterModal()
+  }
+}
+
+// Función para abrir el modal de registro de alimentos
+const openFoodRegisterModal = () => {
+  foodRegisterModal.value?.open()
+}
+
+// Manejar el registro de alimentos
+const handleFoodRegistration = (foodData) => {
+  // Guardar en el registro
+  foodRegistry.value.push(foodData)
+  
+  // Guardar en Firebase
+  firebaseStore.saveFoodRegistry(foodData)
+    .then(() => {
+      console.log('Registro de alimentos guardado correctamente')
+      
+      // Marcar la tarea como completada
+      const foodTask = todayTasks.value.find(task => task.id === 2)
+      if (foodTask) {
+        foodTask.completed = true
+      }
+      
+      // Añadir a tareas completadas
+      completedTasks.value.unshift({
+        title: 'Registro de alimentos',
+        subtitle: foodData.results.items.map(i => i.name).join(', '),
+        icon: 'mdi-food-apple',
+        completedAt: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      })
+    })
+    .catch(error => {
+      console.error('Error al guardar registro de alimentos:', error)
+    })
+}
+
+// Formatear fecha y hora
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
 onMounted(async () => {
   console.log('Home - Iniciando carga de datos desde el store centralizado')
   
   try {
     // Cargar datos del usuario usando el store centralizado
     await firebaseStore.loadUserData()
+    
+    // Cargar registros de alimentos
+    await firebaseStore.loadFoodRegistry()
+    if (firebaseStore.foodRegistry) {
+      foodRegistry.value = firebaseStore.foodRegistry
+      // Ordenar por fecha más reciente
+      foodRegistry.value.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    }
     
     if (firebaseStore.userData) {
       userData.value = firebaseStore.userData
@@ -195,5 +317,30 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.food-image-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.food-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nutrition-summary {
+  margin-top: 8px;
+}
+
+.nutrition-item {
+  margin-right: 16px;
+  margin-bottom: 4px;
+  color: #666;
+  font-size: 0.9rem;
 }
 </style>

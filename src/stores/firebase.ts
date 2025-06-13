@@ -24,11 +24,13 @@ export const useFirebaseStore = defineStore('firebase', () => {
   const userData = ref(null)
   const isUserDataLoaded = ref(false)
   const sessionId = ref(localStorage.getItem('obesurSessionId') || null)
+  const foodRegistry = ref([])
   
   // Getters
   const getUserData = computed(() => userData.value)
   const getSessionId = computed(() => sessionId.value)
   const isLoaded = computed(() => isUserDataLoaded.value)
+  const getFoodRegistry = computed(() => foodRegistry.value)
   
   // Actions
   function setSessionId(id) {
@@ -110,6 +112,91 @@ export const useFirebaseStore = defineStore('firebase', () => {
     })
   }
   
+  // Guardar registro de alimentos
+  async function saveFoodRegistry(foodData) {
+    if (!sessionId.value) {
+      console.error('No hay sesión activa para guardar datos de alimentos')
+      return false
+    }
+    
+    try {
+      // Añadir ID único basado en timestamp
+      const foodEntry = {
+        ...foodData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      }
+      
+      // Actualizar el estado local
+      if (!foodRegistry.value) foodRegistry.value = []
+      foodRegistry.value.push(foodEntry)
+      
+      // Guardar en Firebase
+      await set(dbRef(database, `food/${sessionId.value}/${foodEntry.id}`), foodEntry)
+      
+      // También guardar en localStorage como respaldo
+      localStorage.setItem('foodRegistry', JSON.stringify(foodRegistry.value))
+      
+      return true
+    } catch (error) {
+      console.error('Error al guardar datos de alimentos:', error)
+      return false
+    }
+  }
+  
+  // Cargar registro de alimentos
+  async function loadFoodRegistry() {
+    if (!sessionId.value) {
+      console.log('Firebase Store: No hay sesión activa para cargar datos de alimentos')
+      
+      // Intentar cargar desde localStorage como fallback
+      const localData = localStorage.getItem('foodRegistry')
+      if (localData) {
+        try {
+          foodRegistry.value = JSON.parse(localData)
+          console.log('Firebase Store: Datos de alimentos cargados desde localStorage')
+          return foodRegistry.value
+        } catch (error) {
+          console.error('Error al parsear datos de alimentos de localStorage:', error)
+        }
+      }
+      return null
+    }
+    
+    return new Promise((resolve) => {
+      const foodRef = dbRef(database, `food/${sessionId.value}`)
+      
+      onValue(foodRef, (snapshot) => {
+        const data = snapshot.val()
+        console.log('Firebase Store: Datos de alimentos recibidos de Firebase:', data)
+        
+        if (data) {
+          // Convertir objeto a array
+          const foodArray = Object.values(data)
+          foodRegistry.value = foodArray
+          
+          // Actualizar copia en localStorage
+          localStorage.setItem('foodRegistry', JSON.stringify(foodArray))
+        } else {
+          console.log('Firebase Store: No hay datos de alimentos para esta sesión')
+          
+          // Intentar cargar desde localStorage como fallback
+          const localData = localStorage.getItem('foodRegistry')
+          if (localData) {
+            try {
+              foodRegistry.value = JSON.parse(localData)
+              console.log('Firebase Store: Datos de alimentos cargados desde localStorage')
+            } catch (error) {
+              console.error('Error al parsear datos de alimentos de localStorage:', error)
+            }
+          }
+        }
+        
+        resolve(foodRegistry.value)
+      })
+    })
+  }
+  
   // Cargar datos automáticamente al inicializar el store
   if (sessionId.value) {
     loadUserData()
@@ -120,15 +207,19 @@ export const useFirebaseStore = defineStore('firebase', () => {
     userData,
     isUserDataLoaded,
     sessionId,
+    foodRegistry,
     
     // Getters
     getUserData,
     getSessionId,
     isLoaded,
+    getFoodRegistry,
     
     // Actions
     setSessionId,
     saveUserData,
-    loadUserData
+    loadUserData,
+    saveFoodRegistry,
+    loadFoodRegistry
   }
 })
