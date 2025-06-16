@@ -1,9 +1,9 @@
 <template>
   <div class="reason-screen">
     <v-card-title class="text-center text-h5 font-weight-bold pb-2">
-      ¿Cuál es el motivo principal de tu seguimiento médico?
+      ¿Que  te motiva??
     </v-card-title>
-    
+
     <v-card-text>
       <v-radio-group
         v-model="reason"
@@ -14,27 +14,27 @@
           value="weight-loss"
           label="Pérdida de peso"
         ></v-radio>
-        
+
         <v-radio
           value="metabolic-syndrome"
           label="Síndrome metabólico"
         ></v-radio>
-        
+
         <v-radio
           value="diabetes-control"
           label="Control de diabetes"
         ></v-radio>
-        
+
         <v-radio
           value="nutrition-advice"
-          label="Asesoría nutricional"
+          label="Cambio estilo de vida"
         ></v-radio>
-        
+
         <v-radio
           value="other"
           label="Otro"
         ></v-radio>
-        
+
         <v-text-field
           v-if="reason === 'other'"
           v-model="otherReason"
@@ -46,7 +46,7 @@
         ></v-text-field>
       </v-radio-group>
     </v-card-text>
-    
+
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn

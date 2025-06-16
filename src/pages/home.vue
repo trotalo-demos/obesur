@@ -66,7 +66,7 @@
                 </div>
               </v-card-text>
             </v-card>
-            
+
             <!-- Registros de alimentos -->
             <div v-if="foodRegistry && foodRegistry.length > 0">
               <h2 class="text-h6 mt-6 mb-3">Historial de Alimentos</h2>
@@ -77,17 +77,20 @@
                     <div class="food-image-container mr-4">
                       <img :src="food.imageUrl" alt="Imagen de comida" class="food-image">
                     </div>
-                    
+
                     <!-- Detalles del alimento -->
                     <div>
                       <h3 class="text-h6">{{ formatDate(food.timestamp) }}</h3>
-                      <v-chip-group class="mb-2">
+                      <v-chip-group
+                        v-if="food.results.items"
+                        class="mb-2"
+                      >
                         <v-chip v-for="(item, i) in food.results.items.slice(0, 3)" :key="i" size="small" color="primary" class="mr-1">
                           {{ item.name }}
                         </v-chip>
                         <v-chip v-if="food.results.items.length > 3" size="small">+{{ food.results.items.length - 3 }} más</v-chip>
                       </v-chip-group>
-                      
+
                       <!-- Información nutricional resumida -->
                       <div class="d-flex flex-wrap nutrition-summary">
                         <div class="nutrition-item">
@@ -108,7 +111,7 @@
                 </v-card-text>
               </v-card>
             </div>
-            
+
             <!-- Mensaje si no hay registros -->
             <div v-else class="text-center py-8">
               <v-icon icon="mdi-food-off" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
@@ -123,7 +126,13 @@
 
   <!-- Modal para registro de alimentos -->
   <FoodRegisterModal ref="foodRegisterModal" @save="handleFoodRegistration" />
-  
+
+  <!-- Modal para registro de peso -->
+  <WeightRegisterModal
+    ref="weightRegisterModal"
+    @weight-updated="handleWeightRegistration"
+  />
+
   <!-- Footer con navegación -->
   <v-bottom-navigation bg-color="surface">
     <v-btn value="cirugia">
@@ -147,6 +156,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useFirebaseStore } from '../stores/firebase'
 import FoodRegisterModal from '../components/home/FoodRegisterModal.vue'
+import WeightRegisterModal from '../components/home/WeightRegisterModal.vue'
 
 defineOptions({
   name: 'HomePage'
@@ -158,15 +168,12 @@ const firebaseStore = useFirebaseStore()
 // Usuario y datos
 const userData = ref(null)
 
-// Datos de debuggeo
-const debugInfo = ref('')
-
 // Estado de la aplicación
 const activeTab = ref('hoy')
 
 // Tareas del día
 const todayTasks = ref([
-  { id: 1, title: 'Actividad física diaria', description: '30 minutos', icon: 'mdi-run', completed: false },
+  { id: 1, title: 'Registro de peso', description: 'Tu seguimiento diario', icon: 'mdi-scale', completed: false },
   { id: 2, title: 'Registro de alimentos', description: 'Desayuno, comida, cena', icon: 'mdi-food-apple', completed: false },
   { id: 3, title: 'Control de agua', description: '2 litros', icon: 'mdi-water', completed: false },
   { id: 4, title: 'Lectura educativa', description: 'Artículo nutrición', icon: 'mdi-book-open-page-variant', completed: false }
@@ -174,18 +181,7 @@ const todayTasks = ref([
 
 // Lista de tareas completadas
 const completedTasks = ref([
-  {
-    title: 'Beber 2L de agua',
-    subtitle: '',
-    icon: 'mdi-water',
-    completedAt: 'Hoy, 10:30'
-  },
-  {
-    title: 'Registrar peso',
-    subtitle: '78.5kg',
-    icon: 'mdi-scale-bathroom',
-    completedAt: 'Ayer, 08:15'
-  }
+
 ])
 
 // Contar tareas completadas y totales
@@ -194,14 +190,20 @@ const completedTasksCount = computed(() => todayTasks.value.filter(task => task.
 
 // Referencias a componentes
 const foodRegisterModal = ref(null)
+const weightRegisterModal = ref(null)
 
-// Alimentos registrados
+// Registros de alimentos y peso
 const foodRegistry = ref([])
+const weightRegistry = ref([])
 
 // Manejar clic en una tarea
-const handleTaskClick = (task) => {
-  // Si es la tarea de registro de alimentos, abrir el modal
-  if (task.id === 2) {
+const handleTaskClick = (task: any) => {
+  // Registrar peso
+  if (task.id === 1) {
+    openWeightRegisterModal()
+  }
+  // Registrar alimentos
+  else if (task.id === 2) {
     openFoodRegisterModal()
   }
 }
@@ -211,25 +213,30 @@ const openFoodRegisterModal = () => {
   foodRegisterModal.value?.open()
 }
 
+// Función para abrir el modal de registro de peso
+const openWeightRegisterModal = () => {
+  weightRegisterModal.value?.open()
+}
+
 // Manejar el registro de alimentos
 const handleFoodRegistration = (foodData) => {
   // Guardar en Firebase
   firebaseStore.saveFoodRegistry(foodData)
     .then(() => {
       console.log('Registro de alimentos guardado correctamente')
-      
+
       // Marcar la tarea como completada
       const foodTask = todayTasks.value.find(task => task.id === 2)
       if (foodTask) {
         foodTask.completed = true
       }
-      
+
       // Añadir a tareas completadas
       completedTasks.value.unshift({
         title: 'Registro de alimentos',
         subtitle: foodData.results.items.map(i => i.name).join(', '),
         icon: 'mdi-food-apple',
-        completedAt: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        completedAt: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       })
     })
     .catch(error => {
@@ -237,8 +244,34 @@ const handleFoodRegistration = (foodData) => {
     })
 }
 
+// Manejar el registro de peso
+const handleWeightRegistration = (weightData: any) => {
+  // Guardar en Firebase
+  firebaseStore.saveWeightRegistry(weightData)
+    .then(() => {
+      console.log('Registro de peso guardado correctamente')
+
+      // Marcar la tarea como completada
+      const weightTask = todayTasks.value.find(task => task.id === 1)
+      if (weightTask) {
+        weightTask.completed = true
+      }
+
+      // Añadir a tareas completadas
+      completedTasks.value.unshift({
+        title: 'Registro de peso',
+        subtitle: `${weightData.value} kg`,
+        icon: 'mdi-scale-bathroom',
+        completedAt: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      })
+    })
+    .catch(error => {
+      console.error('Error al guardar registro de peso:', error)
+    })
+}
+
 // Formatear fecha y hora
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat('es-ES', {
     day: 'numeric',
@@ -250,25 +283,33 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   console.log('Home - Iniciando carga de datos desde el store centralizado')
-  
+
   try {
     // Cargar datos del usuario usando el store centralizado
     await firebaseStore.loadUserData()
-    
+
     // Cargar registros de alimentos
     await firebaseStore.loadFoodRegistry()
     if (firebaseStore.foodRegistry) {
       foodRegistry.value = firebaseStore.foodRegistry
       // Ordenar por fecha más reciente
-      foodRegistry.value.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      foodRegistry.value.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     }
-    
+
+    // Cargar registros de peso
+    await firebaseStore.loadWeightRegistry()
+    if (firebaseStore.weightRegistry) {
+      weightRegistry.value = firebaseStore.weightRegistry
+      // Ordenar por fecha más reciente
+      weightRegistry.value.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    }
+
     if (firebaseStore.userData) {
       userData.value = firebaseStore.userData
       console.log('Home - Datos cargados correctamente desde el store centralizado:', userData.value)
     } else {
       console.log('Home - No se encontraron datos de usuario en el store centralizado')
-      
+
       // Fallback a localStorage (solo para compatibilidad durante la migración)
       const localUserData = localStorage.getItem('userData')
       if (localUserData) {

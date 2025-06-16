@@ -3,7 +3,7 @@
     <v-card-title class="text-center text-h5 font-weight-bold pb-2">
       ¿Cuál es tu nivel de actividad física?
     </v-card-title>
-    
+
     <v-card-text>
       <div class="d-flex flex-column">
         <v-btn
@@ -22,7 +22,7 @@
             </div>
           </div>
         </v-btn>
-        
+
         <v-btn
           block
           :color="activityLevel === 'occasional' ? 'primary' : 'grey-lighten-3'"
@@ -39,7 +39,7 @@
             </div>
           </div>
         </v-btn>
-        
+
         <v-btn
           block
           :color="activityLevel === 'regular' ? 'primary' : 'grey-lighten-3'"
@@ -56,7 +56,7 @@
             </div>
           </div>
         </v-btn>
-        
+
         <v-btn
           block
           :color="activityLevel === 'active' ? 'primary' : 'grey-lighten-3'"
@@ -75,7 +75,7 @@
         </v-btn>
       </div>
     </v-card-text>
-    
+
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn
@@ -135,5 +135,10 @@ const validateAndContinue = () => {
   min-height: 400px;
   display: flex;
   flex-direction: column;
+}
+
+/* Sobrescribir estilos de Vuetify para los botones */
+.activity-level-screen :deep(.v-btn) {
+  justify-content: flex-start;
 }
 </style>

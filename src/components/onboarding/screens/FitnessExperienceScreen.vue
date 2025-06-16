@@ -14,7 +14,7 @@
           height="70"
           @click="selectFitnessExperience('basic')"
         >
-          <div class="d-flex align-center justify-start w-100">
+          <div class="d-flex align-left justify-start w-100">
             <v-icon size="large" class="mr-4">mdi-human</v-icon>
             <div class="text-start">
               <div>Básico</div>
@@ -108,6 +108,11 @@ const validateAndContinue = () => {
 </script>
 
 <style scoped>
+/* Sobrescribir estilos de Vuetify para los botones */
+.fitness-experience-screen :deep(.v-btn) {
+  justify-content: flex-start;
+}
+
 .fitness-experience-screen {
   min-height: 400px;
   display: flex;

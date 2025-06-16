@@ -24,6 +24,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     UserAvatar: typeof import('./components/home/UserAvatar.vue')['default']
+    WeightRegisterModal: typeof import('./components/home/WeightRegisterModal.vue')['default']
     WeightScreen: typeof import('./components/onboarding/screens/WeightScreen.vue')['default']
     WelcomeScreen: typeof import('./components/onboarding/screens/WelcomeScreen.vue')['default']
   }

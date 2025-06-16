@@ -135,8 +135,8 @@ const formatActivityLevel = computed(() => {
 
 // Format fitness experience for display
 const formatFitnessExperience = computed(() => {
-  switch (userData.value.fitnessExperience) {
-    case 'beginner': return 'Principiante'
+  switch (userData.value.fitnessExperience  ) {
+    case 'basic': return 'Principiante'
     case 'intermediate': return 'Intermedio'
     case 'advanced': return 'Avanzado'
     default: return 'No especificado'

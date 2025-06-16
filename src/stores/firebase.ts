@@ -25,12 +25,14 @@ export const useFirebaseStore = defineStore('firebase', () => {
   const isUserDataLoaded = ref(false)
   const sessionId = ref(localStorage.getItem('obesurSessionId') || null)
   const foodRegistry = ref([])
+  const weightRegistry = ref([])
   
   // Getters
   const getUserData = computed(() => userData.value)
   const getSessionId = computed(() => sessionId.value)
   const isLoaded = computed(() => isUserDataLoaded.value)
   const getFoodRegistry = computed(() => foodRegistry.value)
+  const getWeightRegistry = computed(() => weightRegistry.value)
   
   // Actions
   function setSessionId(id) {
@@ -197,6 +199,91 @@ export const useFirebaseStore = defineStore('firebase', () => {
     })
   }
   
+  // Guardar registro de peso
+  async function saveWeightRegistry(weightData) {
+    if (!sessionId.value) {
+      console.error('No hay sesión activa para guardar datos de peso')
+      return false
+    }
+    
+    try {
+      // Añadir ID único basado en timestamp
+      const weightEntry = {
+        ...weightData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      }
+      
+      // Actualizar el estado local
+      if (!weightRegistry.value) weightRegistry.value = []
+      weightRegistry.value.push(weightEntry)
+      
+      // Guardar en Firebase
+      await set(dbRef(database, `weight/${sessionId.value}/${weightEntry.id}`), weightEntry)
+      
+      // También guardar en localStorage como respaldo
+      localStorage.setItem('weightRegistry', JSON.stringify(weightRegistry.value))
+      
+      return true
+    } catch (error) {
+      console.error('Error al guardar datos de peso:', error)
+      return false
+    }
+  }
+  
+  // Cargar registro de peso
+  async function loadWeightRegistry() {
+    if (!sessionId.value) {
+      console.log('Firebase Store: No hay sesión activa para cargar datos de peso')
+      
+      // Intentar cargar desde localStorage como fallback
+      const localData = localStorage.getItem('weightRegistry')
+      if (localData) {
+        try {
+          weightRegistry.value = JSON.parse(localData)
+          console.log('Firebase Store: Datos de peso cargados desde localStorage')
+          return weightRegistry.value
+        } catch (error) {
+          console.error('Error al parsear datos de peso de localStorage:', error)
+        }
+      }
+      return null
+    }
+    
+    return new Promise((resolve) => {
+      const weightRef = dbRef(database, `weight/${sessionId.value}`)
+      
+      onValue(weightRef, (snapshot) => {
+        const data = snapshot.val()
+        console.log('Firebase Store: Datos de peso recibidos de Firebase:', data)
+        
+        if (data) {
+          // Convertir objeto a array
+          const weightArray = Object.values(data)
+          weightRegistry.value = weightArray
+          
+          // Actualizar copia en localStorage
+          localStorage.setItem('weightRegistry', JSON.stringify(weightArray))
+        } else {
+          console.log('Firebase Store: No hay datos de peso para esta sesión')
+          
+          // Intentar cargar desde localStorage como fallback
+          const localData = localStorage.getItem('weightRegistry')
+          if (localData) {
+            try {
+              weightRegistry.value = JSON.parse(localData)
+              console.log('Firebase Store: Datos de peso cargados desde localStorage')
+            } catch (error) {
+              console.error('Error al parsear datos de peso de localStorage:', error)
+            }
+          }
+        }
+        
+        resolve(weightRegistry.value)
+      })
+    })
+  }
+  
   // Cargar datos automáticamente al inicializar el store
   if (sessionId.value) {
     loadUserData()
@@ -208,18 +295,20 @@ export const useFirebaseStore = defineStore('firebase', () => {
     isUserDataLoaded,
     sessionId,
     foodRegistry,
-    
+    weightRegistry,
     // Getters
     getUserData,
     getSessionId,
     isLoaded,
     getFoodRegistry,
-    
+    getWeightRegistry,
     // Actions
     setSessionId,
     saveUserData,
     loadUserData,
     saveFoodRegistry,
-    loadFoodRegistry
+    loadFoodRegistry,
+    saveWeightRegistry,
+    loadWeightRegistry
   }
 })
